@@ -2,59 +2,53 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AsyncPaginate } from "react-select-async-paginate";
 import Pagination from "@mui/material/Pagination";
+import { BsCheckCircle } from "react-icons/bs";
 
 import {
-  // useGetArticlesQuery,
-  // useGetAuthorsQuery,
-  // useGetSourcesQuery,
-  useLazyGetArticlesQuery,
+  useGetArticlesQuery,
   useLazyGetAuthorsQuery,
   useLazyGetSourcesQuery,
 } from "../app/services/newsApi";
 import ArticaleCard from "../components/ArticaleCard";
-// import Pagination from "../components/Pagination";
 import { useStateContext } from "../contexts/ContextProvider";
-import { customStyles } from "../constant/CustomStyles";
-// import { CheckCircleIcon } from "@heroicons/react/24/outline";
-// import LoadingItem from "../Elements/LoadingItem";
+import { customStyles } from "../constant/customStyles";
+import Loader from "../components/Loader";
 
 const Home = () => {
   const [articles, setArticles] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [sources, setSources] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [totalNews, setTotalNews] = useState(0);
   const [links, setLinks] = useState([]);
 
   const { user } = useStateContext();
 
-  const [getArticles] = useLazyGetArticlesQuery();
+  const authorIds = authors.map((item) => item.value);
+  const sourceIds = sources.map((item) => item.value);
+
+  const { data, isFetching } = useGetArticlesQuery({
+    page,
+    searchTerm,
+    authorIds,
+    sourceIds,
+  });
+
   const [getAuthors] = useLazyGetAuthorsQuery();
   const [getSources] = useLazyGetSourcesQuery();
 
   useEffect(() => {
-    // console.log(responses.isFetching);
-    const authorIds = authors.map((item) => item.value);
-    const sourceIds = sources.map((item) => item.value);
-
-    getArticles({ page, searchTerm, authorIds, sourceIds })
-      .unwrap()
-      .then((response) => {
-        // console.log(response);
-        setLinks(response.results.links);
-        if (response.status) {
-          setTotalNews(response.results?.total);
-          if (response.results.data?.length) {
-            setArticles(response.results.data);
-          }
+    if (data) {
+      if (data.status) {
+        setLinks(data.results.links);
+        setTotalNews(data.results?.total);
+        if (data.results.data?.length) {
+          setArticles(data.results.data);
         }
-      })
-      .catch((err) => console.error(err));
-
-    // setLoading(false);
-  }, [page, searchTerm, authors, sources]);
+      }
+    }
+  }, [data]);
 
   const handleChange = (event, value) => {
     setPage(value);
@@ -101,9 +95,6 @@ const Home = () => {
   };
 
   const onChangeFilter = (value, type) => {
-    /**
-     * Reset query first.
-     */
     setPage(1);
     setArticles([]);
 
@@ -138,7 +129,6 @@ const Home = () => {
       <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
         News
       </h2>
-
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 sm:gap-x-8">
         <div>
           <label
@@ -204,19 +194,18 @@ const Home = () => {
         </div>
       </div>
 
-      <p className="mt-4 text-gray-500 text-sm">
-        {`Total ${totalNews} news found in this search`}
-      </p>
-
-      {
-        articles.length ? (
+      {isFetching ? (
+        <Loader />
+      ) : articles.length ? (
+        <>
+          <p className="mt-4 text-gray-500 text-sm">
+            {`Total ${totalNews} news found in this search`}
+          </p>
           <div className="flex flex-col items-center gap-10">
             <div className="mx-auto mt-12 grid max-w-lg gap-5 lg:max-w-none lg:grid-cols-3">
               {articles.map((article) => (
                 <ArticaleCard key={article.id} article={article} />
               ))}
-
-              {/* {loading && <LoadingItem />} */}
             </div>
             {/* <Pagination links={links} setPage={setPage} /> */}
             {/* -2 because the next and prev count as a page */}
@@ -226,41 +215,35 @@ const Home = () => {
               onChange={handleChange}
             />
           </div>
-        ) : // <>
-        !loading ? (
-          <div className="mx-auto mt-12 grid max-w-lg gap-5 lg:max-w-none lg:grid-cols-3">
-            {/* <LoadingItem /> */}
-          </div>
-        ) : (
-          <div className="text-center py-16 px-6 sm:py-24 lg:px-8">
-            {/* <CheckCircleIcon
-                className="mx-auto block h-16 w-16 text-center"
-                aria-hidden="true"
-              /> */}
+        </>
+      ) : (
+        <div className="text-center py-16 px-6 sm:py-24 lg:px-8">
+          <BsCheckCircle
+            className="mx-auto block h-16 w-16 text-center"
+            aria-hidden="true"
+          />
 
-            <p className="mt-1 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl mb-4">
-              No articles available at this moment
+          <p className="mt-1 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl mb-4">
+            No articles available at this moment
+          </p>
+
+          <Link
+            to="/"
+            className="text-base font-medium text-indigo-700 hover:text-indigo-600"
+          >
+            Reload to see new articles <span aria-hidden="true"> &rarr;</span>
+          </Link>
+
+          {user && (
+            <p className="mt-4 text-sm text-gray-500">
+              You can also try by resetting your{" "}
+              <Link to="preferences" className="text-indigo-700">
+                preference
+              </Link>
             </p>
-
-            <Link
-              to="/"
-              className="text-base font-medium text-indigo-700 hover:text-indigo-600"
-            >
-              Reload to see new articles <span aria-hidden="true"> &rarr;</span>
-            </Link>
-
-            {user && (
-              <p className="mt-4 text-sm text-gray-500">
-                You can also try by resetting your{" "}
-                <Link to="preferences" className="text-indigo-700">
-                  preference
-                </Link>
-              </p>
-            )}
-          </div>
-        )
-        // </>
-      }
+          )}
+        </div>
+      )}
     </div>
   );
 };
