@@ -1,6 +1,4 @@
 import Home from "./Home";
-import Login from "./Login";
-import Register from "./Register";
-import Preferences from "./Preferences";
+import BookDetails from "./BookDetails";
 
-export { Home, Login, Register, Preferences };
+export { Home, BookDetails };

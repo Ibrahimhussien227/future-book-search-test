@@ -1,0 +1,18 @@
+export const categories = [
+  { name: "Art", value: "art" },
+  { name: "Sports", value: "sport" },
+  { name: "Game", value: "game" },
+  { name: "Programming", value: "programming" },
+  { name: "Cars", value: "cars" },
+  { name: "Weather", value: "weather" },
+  { name: "Animals", value: "animals" },
+  { name: "Films", value: "films" },
+  { name: "Jobs", value: "jobs" },
+  { name: "Languages", value: "languages" },
+  { name: "Fruit", value: "fruit" },
+  { name: "Food", value: "food" },
+  { name: "Drinks", value: "drinks" },
+  { name: "Diseases", value: "diseases" },
+  { name: "Clothes", value: "clothes" },
+  { name: "Buildings", value: "buildings" },
+];
