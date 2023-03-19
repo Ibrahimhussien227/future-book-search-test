@@ -13,29 +13,36 @@ const Home = () => {
 
   const [books, setBooks] = useState([]);
   const [totalBooks, setTotalBooks] = useState(0);
+  const [size, setSize] = useState(0);
 
   const { data, isFetching } = useGetBooksQuery({
     q: params.get("q") || "js",
     category: params.get("category") || "programming",
     sortby: params.get("sortby") || "relevance",
+    size,
   });
 
   useEffect(() => {
-    console.log(data);
     if (data) {
-      if (data.items) {
-        setBooks(data.items);
+      if (data.items !== books) {
+        setBooks(books.concat(data.items));
         setTotalBooks(data.totalItems);
       }
     }
   }, [data]);
 
+  const loadMore = () => {
+    if (size < totalBooks) {
+      setSize((prev) => prev + 30);
+    } else {
+      setSize((prev) => prev - 30);
+    }
+  };
+
   return (
     <div className="px-6 pt-16 pb-20 lg:px-8 lg:pt-24 lg:pb-28">
-      {isFetching ? (
-        <Loader />
-      ) : books.length ? (
-        <>
+      {books.length ? (
+        <div className="flex flex-col justify-center items-center">
           <p className="mt-4 text-gray-500 text-sm">
             {`Total ${totalBooks} news found in this search`}
           </p>
@@ -46,7 +53,16 @@ const Home = () => {
               ))}
             </div>
           </div>
-        </>
+          <button
+            type="button"
+            className="mt-10 border border-indigo-500 p-4 rounded-xl hover:bg-indigo-700"
+            onClick={() => loadMore()}
+          >
+            Load More
+          </button>
+        </div>
+      ) : isFetching ? (
+        <Loader />
       ) : (
         <div className="text-center py-16 px-6 sm:py-24 lg:px-8">
           <BsCheckCircle

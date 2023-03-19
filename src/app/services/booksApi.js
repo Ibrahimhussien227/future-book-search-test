@@ -13,8 +13,8 @@ export const booksApi = createApi({
   }),
   endpoints: (builder) => ({
     getBooks: builder.query({
-      query: ({ q, category, sortby }) => ({
-        url: `/volumes?q=${q}+subject:${category}&orderBy=${sortby}&maxResults=40`,
+      query: ({ q, category, sortby, size }) => ({
+        url: `/volumes?q=${q}+subject:${category}&orderBy=${sortby}&maxResults=30&startIndex=${size}`,
         params,
       }),
     }),
